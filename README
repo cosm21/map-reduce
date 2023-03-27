@@ -1,0 +1,40 @@
+Map-Reduce
+
+Moscalu Cosmin-Andrei
+
+Descriere generala:
+    Fisierul Mapper.cpp contine implementarea clasei Mapper, o clasa template,
+    care primeste la instantiere datele de intrare, functia de mapare data de
+    utilizator dar si o functie de comparare intre chei, aceasta fiind folosita
+    pentru a parcurge cheile intr-o ordine definita de utilizator.
+
+    Fisierul Reducer.cpp contine implementarea clasei Reducer, care poate fi
+    instantiata cu elemente date de utilizator sau cu o referinta la o alta
+    clasa Mapper, astfel se vor prelua elementele de la Mapper atunci cand
+    acesta termina executia.
+
+    Operatiile de map si reduce pot fi rulate simultan, clasele sincronizandu-se
+    printr-o bariera.
+
+Descrierea implementarii:
+    In clasa Mapper, functia rulata in thread extrage un element din heap, iar
+    apoi ruleaza functia data de utilizator doar cu argumentele de care aceasta
+    are nevoie, mai exact cheia extrasa, si hashmap-ul pe care aceasta trebuie
+    sa-l completeze. Daca nu mai exista elemente in heap atunci se asteapta
+    bariera, daca se face sincronizare cu un Reducer.
+
+    In cazul in care se pornesc simultan un Mapper si un Reducer, atunci
+    Reducer-ul trebuie sa realizeze initializarea elementelor din interiorul
+    clasei atunci cand Mapper-ul termina de rulat, astfel doar unul din
+    thread-urile pornite de Reducer va realiza initializarea prin preluarea unui
+    semafor si prin setarea unei variabile care arata ca preluarea rezultatelor
+    de la Mapper s-a terminat. Tot odata cu initializarea elementelor din clasa
+    Reducer, se vor determina toate cheile care au fost generate de thread-urile
+    mapper, apoi se va aloca cate o cheie pentru fiecare thread reducer, un
+    thread reducer ocupandu-se de cate o singura cheie.
+    
+    Dupa ce elementele din clasa Reducer au fost initializate, este
+    responsabilitatea fiecarui thread sa grupeze valorile de la hashmap-urile
+    din clasa Mapper, existand cate un astfel de hashmap pentru fiecare thread
+    mapper. In final, se apeleaza functia data de utilizator care realizeaza
+    reducerea.
